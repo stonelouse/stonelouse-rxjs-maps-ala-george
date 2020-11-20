@@ -1,6 +1,12 @@
 import { Component, VERSION } from "@angular/core";
 import { interval, Observable, Subject, Subscription } from "rxjs";
-import { exhaustMap, mergeMap, switchMap, take } from "rxjs/operators";
+import {
+  concatMap,
+  exhaustMap,
+  mergeMap,
+  switchMap,
+  take
+} from "rxjs/operators";
 
 @Component({
   selector: "my-app",
@@ -30,6 +36,9 @@ export class AppComponent {
       case "exhaustMap":
         this.setExhaustMap();
         break;
+      case "concatMap":
+        this.setConcatMap();
+        break;
       default:
         this.setSwitchMap();
     }
@@ -39,6 +48,21 @@ export class AppComponent {
     this.values.push("Trigger clicked");
     console.log("Trigger clicked");
     this.subject$.next();
+  }
+
+  private setConcatMap() {
+    /*
+     `concatMap` will append observable data from one to another. 
+     ... It will create a queue that will run 
+     ... when the previous data has been completed.
+     
+     `concatMap` does not subscribe to the next observable 
+     ... until the previous completes.
+     */
+    this.initializeOperator("ConcatMap");
+    this.subscription = this.subject$
+      .pipe(concatMap(_ => this.interval1000.pipe(take(5))))
+      .subscribe(num => this.action(num));
   }
 
   private setExhaustMap() {
