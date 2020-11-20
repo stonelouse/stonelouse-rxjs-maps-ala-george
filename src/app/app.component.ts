@@ -1,6 +1,6 @@
 import { Component, VERSION } from "@angular/core";
 import { interval, Observable, Subject, Subscription } from "rxjs";
-import { mergeMap, switchMap, take } from "rxjs/operators";
+import { exhaustMap, mergeMap, switchMap, take } from "rxjs/operators";
 
 @Component({
   selector: "my-app",
@@ -27,6 +27,9 @@ export class AppComponent {
       case "mergeMap":
         this.setMergeMap();
         break;
+      case "exhaustMap":
+        this.setExhaustMap();
+        break;
       default:
         this.setSwitchMap();
     }
@@ -36,6 +39,22 @@ export class AppComponent {
     this.values.push("Trigger clicked");
     console.log("Trigger clicked");
     this.subject$.next();
+  }
+
+  private setExhaustMap() {
+    /*
+     `exhaustMap` will prevent any data from going through 
+     ... if the previous observable is not yet completed. 
+     Which means, 
+     ... whatever data you force into that observable will not even be received. 
+     ... It will be ignored.
+
+     Map to inner observable, ignore other values until that observable completes.
+     */
+    this.initializeOperator("ExhaustMap");
+    this.subscription = this.subject$
+      .pipe(exhaustMap(_ => this.interval1000.pipe(take(5))))
+      .subscribe(num => this.action(num));
   }
 
   private setMergeMap() {
@@ -59,6 +78,7 @@ export class AppComponent {
       .pipe(mergeMap(_ => this.interval1000.pipe(take(5))))
       .subscribe(num => this.action(num));
   }
+
   private setSwitchMap() {
     /*
      When a next value pushed to the observable, 
